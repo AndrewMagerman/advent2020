@@ -24,9 +24,9 @@ def test_count_valid_passports():
 
 
 def test_byr():
-    assert byr_is_valid('200') is False
-    assert byr_is_valid('2002') is True
-    assert byr_is_valid('2003') is False
+    assert rules['byr']('200') is False
+    assert rules['byr']('2002') is True
+    assert rules['byr']('2003') is False
 
 
 def test_hgt():
@@ -37,19 +37,19 @@ def test_hgt():
 
 
 def test_hcl():
-    assert hcl_is_valid('#123abc')
-    assert not hcl_is_valid('#123abz')
-    assert not hcl_is_valid('123abc')
+    assert rules['hcl']('#123abc')
+    assert not rules['hcl']('#123abz')
+    assert not rules['hcl']('123abc')
 
 
 def test_ecl_valid():
-    assert ecl_valid('brn')
-    assert not ecl_valid('wat')
+    assert ecl_is_valid('brn')
+    assert not ecl_is_valid('wat')
 
 
 def test_pid():
-    assert pid_valid('000000001')
-    assert not pid_valid('0123456789')
+    assert rules['pid']('000000001')
+    assert not rules['pid']('0123456789')
 
 
 def test_valid_passports():

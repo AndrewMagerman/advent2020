@@ -1,80 +1,41 @@
 import re
+from functools import partial
 from pathlib import Path
 
 testfile = Path(r'/Users/andrewmagerman/sourcecontrol/advent2020/src/day4/testinput.txt')
 realfile = Path(r'/Users/andrewmagerman/sourcecontrol/advent2020/src/day4/puzzleinput.txt')
 
 
-def is_four_digits(value):
-    if not len(value) == 4:
+def value_is_four_digits_and_in_range(smallest, largest, param):
+    if not len(param) == 4:
         return False
-    if not re.match(r'\d{4}', value):
-        return False
-    return True
-
-
-def byr_is_valid(value):
-    if not is_four_digits(value):
+    if not re.match(r'\d{4}', param):
         return False
 
-    k = int(value)
-
-    return 1920 <= k <= 2002
+    return smallest <= int(param) <= largest
 
 
-def iyr_is_valid(value):
-    if not is_four_digits(value):
-        return False
-
-    k = int(value)
-
-    return 2010 <= k <= 2020
-
-
-def eyr_is_valid(value):
-    if not is_four_digits(value):
-        return False
-
-    k = int(value)
-
-    return 2020 <= k <= 2030
-
-
-def hgt_is_valid(value):
-    a = re.match(r'(\d+)(cm|in)', value)
+def hgt_is_valid(param):
+    a = re.match(r'(\d+)(cm|in)', param)
     if not a:
         return False
-    number = int(a.group(1))
-    unit = a.group(2)
-    if unit == 'cm':
-        return 150 <= number <= 193
-    if unit == 'in':
-        return 59 <= number <= 76
-
-    print(number, unit)
-    return True
+    number, unit = int(a.group(1)), a.group(2)
+    return {'cm': 150 <= number <= 193,
+            'in': 59 <= number <= 76}[unit]
 
 
-def hcl_is_valid(value):
-    return re.match(r'#[0-9a-f]{6}', value)
-
-
-def ecl_valid(param):
+def ecl_is_valid(param):
     valid_values = 'amb blu brn gry grn hzl oth'.split()
     return param in valid_values
 
 
-def pid_valid(param):
-    return re.match(r'\d{9}$', param)
-
-
-rules = {'byr': byr_is_valid,
-         'iyr': iyr_is_valid,
-         'eyr': eyr_is_valid,
+rules = {'byr': partial(value_is_four_digits_and_in_range, 1920, 2002),
+         'iyr': partial(value_is_four_digits_and_in_range, 2010, 2020),
+         'eyr': partial(value_is_four_digits_and_in_range, 2020, 2030),
          'hgt': hgt_is_valid,
-         'hcl': hcl_is_valid,
-         'ecl': ecl_valid,
-         'pid': pid_valid,
+         'hcl': partial(re.match, r'#[0-9a-f]{6}'),
+         'ecl': ecl_is_valid,
+         'pid': partial(re.match, r'\d{9}$'),
          }
 
 
@@ -90,7 +51,6 @@ def fields(passport: str):
     for entry in entries(passport):
         k = entry.partition(':')
         result[k[0]] = k[2]
-    print(result)
     return result
 
 
@@ -100,18 +60,8 @@ def entries(passport: str):
 
 def is_valid(passport):
     all_fields = fields(passport)
-    print(all_fields)
-    necesary_entries = [
-        'byr',
-        'iyr',
-        'eyr',
-        'hgt',
-        'hcl',
-        'ecl',
-        'pid',
-        # 'cid',
-    ]
-    for n in necesary_entries:
+
+    for n in rules:
         if n not in all_fields:
             return False
 
@@ -127,8 +77,7 @@ def is_valid(passport):
 
 def count_valid_passports(testfile):
     result = 0
-    pp = passports(testfile)
-    for p in pp:
+    for p in passports(testfile):
         if is_valid(p):
             result += 1
 

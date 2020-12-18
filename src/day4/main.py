@@ -24,8 +24,7 @@ def hgt_is_valid(param):
 
 
 def ecl_is_valid(param):
-    valid_values = 'amb blu brn gry grn hzl oth'.split()
-    return param in valid_values
+    return param in 'amb blu brn gry grn hzl oth'.split()
 
 
 rules = {'byr': partial(value_is_four_digits_and_in_range, 1920, 2002),
@@ -66,8 +65,7 @@ def is_valid(passport):
     for key, value in all_fields.items():
         if key == 'cid':
             continue
-        test_function = rules[key]
-        if not test_function(value):
+        if not rules[key](value):
             return False
 
     return True

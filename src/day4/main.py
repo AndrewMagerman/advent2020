@@ -7,8 +7,7 @@ realfile = Path(r'/Users/andrewmagerman/sourcecontrol/advent2020/src/day4/puzzle
 
 
 def value_is_four_digits_and_in_range(smallest, largest, param):
-    if not len(param) == 4:
-        return False
+
     if not re.match(r'\d{4}', param):
         return False
 
@@ -42,8 +41,7 @@ rules = {'byr': partial(value_is_four_digits_and_in_range, 1920, 2002),
 def passports(file: Path):
     with file.open('r') as f:
         a = f.read()
-        passports = a.split('\n\n')
-        return passports
+        return a.split('\n\n')
 
 
 def fields(passport: str):

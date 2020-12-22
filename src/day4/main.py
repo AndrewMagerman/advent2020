@@ -39,8 +39,7 @@ rules = {'byr': partial(value_is_four_digits_and_in_range, 1920, 2002),
 
 def passports(file: Path):
     with file.open('r') as f:
-        a = f.read()
-        return a.split('\n\n')
+        return f.read().split('\n\n')
 
 
 def fields(passport: str):
@@ -71,9 +70,9 @@ def is_valid(passport):
     return True
 
 
-def count_valid_passports(testfile):
+def count_valid_passports(file):
     result = 0
-    for p in passports(testfile):
+    for p in passports(file):
         if is_valid(p):
             result += 1
 

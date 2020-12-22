@@ -6,6 +6,10 @@ import more_itertools
 realfile = Path(r'/Users/andrewmagerman/sourcecontrol/advent2020/src/day5/puzzleinput.txt')
 
 
+# Lessons_learned: deal with real lists instead of iterators, easier to debug
+# don't jump test cases
+# head, *tail = row_definitions is soooo cooool!
+
 def row_rec_magic(row_definitions: str, r: Iterable):
     front, back = more_itertools.divide(2, r)
     if len(row_definitions) == 1:

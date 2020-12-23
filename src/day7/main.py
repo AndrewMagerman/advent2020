@@ -2,61 +2,72 @@ import copy
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import ClassVar
 
 testfile = Path(r'/Users/andrewmagerman/sourcecontrol/advent2020/src/day7/testinput.txt')
 realfile = Path(r'/Users/andrewmagerman/sourcecontrol/advent2020/src/day7/puzzleinput.txt')
 
 
-def get_new_bag(colour):
-    return copy.deepcopy(all_bags[colour])
-
-
 @dataclass
 class Bag:
     colour: str = ''
-    contents: dict = field(default_factory=dict)
-    contained_colours: list = field(default_factory=list)
+    content_definition_colour_to_count: dict = field(default_factory=dict)
     bags: list = field(default_factory=list)
     bags_loaded: bool = False
+    flat_list_of_bags: ClassVar
+
+    @staticmethod
+    def load_all_definitions(file: Path):
+        result = dict()
+        with file.open('r') as f:
+            for line in f.read().splitlines():
+                bag = Bag()
+                bag.load(line)
+                result[bag.colour] = bag
+        Bag.flat_list_of_bags = result
+
+    @staticmethod
+    def get_new_bag(colour: str):
+        return copy.deepcopy(Bag.flat_list_of_bags[colour])
 
     def load(self, inputstring):
-        a = re.match(r'(?P<colour>\w+ \w+) bags contain (?P<contentlist>.*)\.', inputstring)
-        self.colour = a.group('colour')
-        self.contentlist = a.group('contentlist')
-        for content in self.contentlist.split(','):
+        a = re.match(r'(?P<bag_colour>\w+ \w+) bags contain (?P<bag_contents>.*)\.', inputstring)
+        self.colour = a.group('bag_colour')
+        for content in a.group('bag_contents').split(','):
             v = re.match(r'(?P<count>\d+) (?P<colour>\w+ \w+) bag[s]?', content.strip())
             if v:
-                self.contents[v.group('colour')] = int(v.group('count'))
-                self.contained_colours.append(v.group('colour'))
-                # self.contents.append(v.group('colour'))
-            else:
-                print(f'could not parse |{content}|')
+                self.content_definition_colour_to_count[v.group('colour')] = int(v.group('count'))
 
-    def contains_colour(self, inputcolour):
-        if inputcolour in self.contents:
+    def contains_bag_of_this_colour(self, input_colour):
+        if not self.bags_loaded:
+            self.load_all_bags()
+
+        for bag in self.bags:
+            if bag.colour == input_colour:
+                return True
+            else:
+                return bag.contains_bag_of_this_colour(input_colour)
+
+    @property
+    def has_bag_definitions(self):
+        if self.content_definition_colour_to_count:
             return True
-        if self.contents:
-            for content in self.contents:
-                containedbag = all_bags[content]
-                if containedbag.contains_colour(inputcolour):
-                    return True
-        else:
-            return
+        return False
 
     def load_all_bags(self):
         self.bags_loaded = True
-        if not self.contents:
+        if not self.has_bag_definitions:
             return
 
-        for colour, count in self.contents.items():
-            for c in range(count):
-                a = get_new_bag(colour)
-                self.bags.append(a)
+        for colour, count in self.content_definition_colour_to_count.items():
+            for _ in range(count):
+                self.bags.append(Bag.get_new_bag(colour))
 
-        for b in self.bags:
-            load_all_bags(b)
+        for bag in self.bags:
+            bag.load_all_bags()
 
-    def count_all_bags(self):
+    @property
+    def count_all_bags(self):}
         if not self.bags_loaded:
             self.load_all_bags()
 
@@ -64,57 +75,15 @@ class Bag:
             return 0
 
         result = 0
-        for b in self.bags:
-            result += 1 + count_all_bags(b)
+        for bag in self.bags:
+            result += 1 + bag.count_all_bags
         return result
 
 
-def bags(file: Path):
-    result = dict()
-    with file.open('r') as f:
-        for line in f.read().splitlines():
-            bag = Bag()
-            bag.load(line)
-            result[bag.colour] = bag
-    return result
-
-
-all_bags = bags(testfile)
-
-
-def sum_bag_colours_containing():
-    result = 0
-    for key, value in all_bags.items():
-        if value.contains_colour('shiny gold'):
-            result += 1
-    return result
-
-
-def load_all_bags(bag: Bag):
-    if not bag.contents:
-        return
-
-    for colour, count in bag.contents.items():
-        for c in range(count):
-            a = get_new_bag(colour)
-            bag.bags.append(a)
-
-    for b in bag.bags:
-        load_all_bags(b)
-
-
-def count_all_bags(bag: Bag):
-    if not bag.bags:
-        return 0
-
-    result = 0
-    for b in bag.bags:
-        result += 1 + count_all_bags(b)
-    return result
-
-
 if __name__ == '__main__':
-    my_bag = get_new_bag('shiny gold')
-    print(my_bag.count_all_bags())
-    print(my_bag)
+    Bag.load_all_definitions(realfile)
+    print(Bag.flat_list_of_bags)
 
+    my_bag = Bag.get_new_bag('shiny gold')
+
+    print(my_bag.count_all_bags)

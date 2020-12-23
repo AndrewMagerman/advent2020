@@ -67,7 +67,7 @@ class Bag:
             bag.load_all_bags()
 
     @property
-    def count_all_bags(self):}
+    def count_all_bags(self):
         if not self.bags_loaded:
             self.load_all_bags()
 
